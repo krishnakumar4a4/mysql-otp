@@ -196,7 +196,7 @@ ping(SockModule, Socket) ->
     parse_ok_packet(OkPacket).
 
 -spec query(Query :: iodata(), module(), term(), timeout()) ->
-    {ok, [#ok{} | #resultset{} | #error{}]} | {error, timeout}.
+    {ok, [#ok{} | #resultset{} | #error{}]} | {error, term()}.
 query(Query, SockModule, Socket, Timeout) ->
     query(Query, SockModule, Socket, no_filtermap_fun, Timeout).
 
@@ -260,7 +260,7 @@ unprepare(#prepared{statement_id = Id}, SockModule, Socket) ->
 
 %% @doc Executes a prepared statement.
 -spec execute(#prepared{}, [term()], module(), term(), timeout()) ->
-    {ok, [#ok{} | #resultset{} | #error{}]} | {error, timeout}.
+    {ok, [#ok{} | #resultset{} | #error{}]} | {error, term()}.
 execute(PrepStmt, ParamValues, SockModule, Socket, Timeout) ->
     execute(PrepStmt, ParamValues, SockModule, Socket, no_filtermap_fun,
             Timeout).
@@ -559,7 +559,7 @@ parse_handshake_confirm(<<?MORE_DATA, MoreData/binary>>) ->
 %% prepared statements).
 -spec fetch_response(module(), term(), timeout(), text | binary,
                      query_filtermap(), list()) ->
-    {ok, [#ok{} | #resultset{} | #error{}]} | {error, timeout}.
+    {ok, [#ok{} | #resultset{} | #error{}]} | {error, term()}.
 fetch_response(SockModule, Socket, Timeout, Proto, FilterMap, Acc) ->
     case recv_packet(SockModule, Socket, Timeout, any) of
         {ok, Packet, SeqNum2} ->
@@ -582,8 +582,8 @@ fetch_response(SockModule, Socket, Timeout, Proto, FilterMap, Acc) ->
                 false ->
                     {ok, lists:reverse(Acc1)}
             end;
-        {error, timeout} ->
-            {error, timeout}
+        {error, Reason} ->
+            {error, Reason}
     end.
 
 %% @doc Fetches a result set.
